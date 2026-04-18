@@ -23,6 +23,16 @@ export const algorithms = {
         answer: '常數係數差異：(1) Cache 效能：Quick Sort 原地排序，分區操作是連續記憶體存取，Cache 命中率高；Merge Sort 需要額外陣列，記憶體存取模式跳躍，Cache Miss 更多；(2) 分支預測：Quick Sort 的分區步驟分支可預測；(3) Auxiliary Memory：Merge Sort 需要 O(n) 額外空間，分配和複製有開銷。但當資料近乎有序時，Quick Sort 退化到 O(n²)，Timsort（Python/Java 的穩定排序）針對此優化——偵測已有序的 Run，直接 Merge，最佳情況 O(n)。',
         keywords: ['Cache Locality', 'In-place', 'Timsort', 'Intro Sort', 'Pivot Selection'],
       },
+      {
+        question: '什麼是穩定排序 (Stable Sort)？為什麼它在實際系統中很重要？',
+        answer: "穩定排序保證相等元素的相對順序在排序後保持不變。這在多級排序中至關重要：例如先按「姓名」排序，再按「分數」排序。穩定排序能保證分數相同的人依然按姓名順序排列。資深視角：Merge Sort 和 Timsort 是穩定的；Quick Sort 和 Heap Sort 是不穩定的。若在不穩定排序中需要穩定性，需將原始 Index 作為聯合排序的一部分（增加空間成本）。",
+        keywords: ['Stability', 'Multi-level Sort', 'Timsort', 'Merge Sort'],
+      },
+      {
+        question: '如何解決 Quick Sort 在最壞情況下的 O(n²) 複雜度？',
+        answer: "(1) **Randomized Pivot**：隨機選擇 Pivot，使最壞情況出現概率降為極低；(2) **Median-of-three**：取首、中、尾三數的中位數作為 Pivot；(3) **Intro Sort**：監控遞迴深度，當深度超過 $2 \log n$ 時自動切換為 Heap Sort（保證 O(n log n)）。這是 C++ `std::sort` 的實現策略。",
+        keywords: ['Intro Sort', 'Pivot Selection', 'Worst Case', 'Recursion Depth'],
+      },
     ],
   },
 
@@ -50,6 +60,16 @@ export const algorithms = {
         answer: 'Java 8 HashMap 原始碼注釋給出了統計學依據：在負載因子 0.75 下，按 Poisson 分布計算，桶中鏈長 = 8 的概率約為 0.00000006（六百萬分之一）。正常情況下幾乎不會觸發樹化，選 8 是在「幾乎不樹化」和「萬一觸發時的效能保障」之間取平衡。同時，樹化需要 TreeNode（是 Node 的兩倍記憶體），閾值太小會浪費記憶體。收縮閾值（樹轉回鏈表）是 6，留 2 的 Hysteresis，防止在邊界值附近頻繁轉換。',
         keywords: ['Poisson Distribution', 'Load Factor', 'TreeNode', 'Rehash', 'Hysteresis'],
       },
+      {
+        question: 'HashMap 的負載因子 (Load Factor) 為什麼預設是 0.75？',
+        answer: "這是一個空間與時間的折衷。提高負載因子（如 0.9）可以節省空間，但會增加雜湊衝突概率，導致查詢鏈變長；降低負載因子（如 0.5）查詢快，但會頻繁觸發 Rehash 且浪費記憶體。0.75 結合了 Poisson 分布規律，使桶中數據量達到一定閾值的概率極小，保證了平均 O(1) 的查詢效率。",
+        keywords: ['Load Factor', 'Space-Time Tradeoff', 'Poisson Distribution'],
+      },
+      {
+        question: '解釋一致性雜湊 (Consistent Hashing) 中的虛擬節點 (Virtual Nodes) 有什麼用？',
+        answer: "物理節點數量較少時，在雜湊環上的分佈可能不均勻，導致「數據傾斜」 (Data Skew)，某些節點負擔過重。虛擬節點將一個物理節點映射到環上的多個位置（通常 100-200 個），使數據分佈更均勻，且在某個物理節點宕機時，其數據能均勻遷移到多個剩餘節點，避免單個節點被壓垮。",
+        keywords: ['Data Skew', 'Consistent Hashing', 'Load Balancing', 'Hotspot'],
+      },
     ],
   },
 
@@ -76,6 +96,16 @@ export const algorithms = {
         question: 'DFS 在圖中如何用於偵測環？',
         answer: '使用三色標記：White（未訪問）、Gray（正在 DFS 中，在當前 Stack 上）、Black（DFS 完成）。若在 DFS 過程中，從一個 Gray 節點存取到另一個 Gray 節點，說明存在後向邊（Back Edge），即有環。具體：對每個未訪問節點開始 DFS，遞迴前標記 Gray，遞迴返回後標記 Black。若在遞迴時發現鄰居是 Gray（在當前 DFS 路徑上），即偵測到環。有向圖（DAG 偵測）用三色；無向圖用二色（visited + parent 追蹤，避免把走回父節點誤判為環）。',
         keywords: ['三色標記', 'Back Edge', 'DFS Stack', '有向圖', '無向圖', 'Topological Sort'],
+      },
+      {
+        question: '與 DFS 相比，為什麼 BFS 更適合在社交網絡中查找「二度人脈」？',
+        answer: "BFS 按層遍歷，第一層是直接好友，第二層就是好友的好友（二度人脈）。BFS 保證在找到目標時路徑是最短的。DFS 則會沿著一條線走到底，可能繞了一大圈才找到一個遠親，且為了找最短路徑需要記錄所有路徑，空間和時間效率極低。資深視角：在工業界，這類問題通常在圖數據庫 (Neo4j) 中使用 Cypher 查詢或使用 Pregel 模型的分散式圖計算實現。",
+        keywords: ['BFS', 'Shortest Path', 'Social Graph', 'Graph Database'],
+      },
+      {
+        question: '解釋 Dijkstra 算法為什麼不能處理負權邊？',
+        answer: "Dijkstra 基於貪婪策略，一旦一個節點被標記為「已確定最短路徑」(visited)，就不會再更新。如果有負權邊，後面的路徑可能讓已確定的節點距離變得更短，破壞了貪婪前提。對於包含負權邊的圖，應使用 **Bellman-Ford** 或 **SPFA** 算法。資深視角：在金融套利檢測中，將匯率取 $\log$ 並取負號，即可將乘法套利轉化為負環檢測問題，使用 Bellman-Ford 求解。",
+        keywords: ['Dijkstra', 'Greedy', 'Negative Weight', 'Bellman-Ford', 'Arbitrage'],
       },
     ],
   },
@@ -108,6 +138,16 @@ export const algorithms = {
         answer: '標準 Bloom Filter 不支援刪除——設定的位元可能被多個元素共享，清除一個元素的位元可能影響其他元素的判斷，造成 False Negative（查詢說「一定不存在」但實際存在）。解法：Counting Bloom Filter（CBF）：每個位元改為計數器，插入時遞增，刪除時遞減，計數器 > 0 表示「可能存在」。代價：每個計數器需要 4 bits（相比 1 bit），空間佔用約 4 倍。Cuckoo Filter：比 CBF 更省空間，支援刪除，且查詢效能更好（利用 Cuckoo Hashing），是 Bloom Filter 的現代替代方案。',
         keywords: ['False Positive', 'False Negative', 'Counting BF', 'Cuckoo Filter', 'Hash Collision'],
       },
+      {
+        question: '為什麼 Redis 的有序集合 (ZSet) 使用 Skip List 而不是紅黑樹？',
+        answer: "(1) **範圍查詢更高效**：Skip List 底層是鏈表，範圍查詢只需在對應層級找到起點，然後順著 Layer 0 往後掃；(2) **併發友好**：Skip List 的修改（如插入）只需局部加鎖，不涉及紅黑樹那樣全域的旋轉平衡；(3) **實現簡單**：代碼量少，易於維護。資深視角：其實內存佔用上 Skip List 略高於紅黑樹，但工程效能與開發彈性的權衡使其成為 Redis 的選擇。",
+        keywords: ['Skip List', 'Red-Black Tree', 'Range Query', 'Concurrency'],
+      },
+      {
+        question: '什麼是 Trie 的「壓縮」 (Radix Tree)，它解決了什麼問題？',
+        answer: "標準 Trie 如果路徑上有很多節點只有一個子節點，會造成大量內存浪費。Radix Tree（基數樹）將這些「單子鏈」合併成一個節點（儲存一個字串而非單個字元）。這顯著減少了節點數量和指針開銷。應用：Redis 的 Stream 結構、Linux 內核的內存頁管理、以及路由匹配庫 (如 Go 的 httprouter) 都廣泛使用 Radix Tree。",
+        keywords: ['Radix Tree', 'Trie', 'Memory Optimization', 'Patricia Trie'],
+      },
     ],
   },
 
@@ -135,6 +175,16 @@ export const algorithms = {
         answer: 'Hash Slot 的優勢：(1) 遷移粒度明確——移動整個 Slot 的資料到新節點，操作明確且可以追蹤進度；(2) 不需要虛擬節點——16384 個 Slot 天然均勻分布，無需額外的虛擬節點機制；(3) 訊息開銷可控——Cluster 的 Gossip 訊息包含每個節點負責的 Slot 範圍（一個位元組位元組），16384 bits = 2KB，Gossip 訊息大小可預測；(4) 運維直觀——可以任意指定哪個節點負責哪些 Slot，方便按業務資料隔離。選 16384 而非 65536：65536 的 Gossip 訊息心跳頭部過大，16384 在叢集節點不超過 1000 時已足夠均衡。',
         keywords: ['Hash Slot', 'Gossip', 'Slot Migration', 'Virtual Node', '16384'],
       },
+      {
+        question: '解釋 Gossip 協議的「最終一致性」是如何達成的？',
+        answer: "Gossip 通過「傳染病式」傳播：每個節點隨機選 K 個鄰居交換數據。數據帶有時間戳/版本號。即使部分節點宕機或網絡分區，只要剩餘節點連通，信息就會在 $O(\log N)$ 個週期內傳遍全體。資深視角：Gossip 適合管理集群元數據 (Membership)，但不適合需要強一致事務的場景，因為它無法保證「任何時刻讀到的都是最新值」。",
+        keywords: ['Gossip', 'Eventual Consistency', 'Vector Clock', 'Convergence'],
+      },
+      {
+        question: '分散式 ID 生成算法 Snowflake (雪花算法) 的原理及潛在問題？',
+        answer: "原理：64-bit Long 型，包含 (1bit 符號) + (41bit 毫秒戳) + (10bit 機器 ID) + (12bit 序列號)。支持高並發且全局有序。問題：(1) **時鐘回撥 (Clock Skew)**：如果機器時鐘回退，可能生成重複 ID。應對：算法需檢查當前時間 < 上次生成時間，並拋出異常或等待時鐘追趕；(2) 機器 ID 分配：通常配合 Zookeeper/Etcd 動態分配機器 ID。",
+        keywords: ['Snowflake', 'Distributed ID', 'Clock Skew', 'Sequence Number'],
+      },
     ],
   },
 
@@ -161,6 +211,16 @@ export const algorithms = {
         question: '令牌桶和漏桶的本質區別是什麼？哪個更適合 API 限流？',
         answer: '令牌桶允許突發（Burst）：令牌是預先積累的，空閑時桶裡積滿令牌，突發流量到來時可以快速消耗積累的令牌，實際允許短時間內超過設定的平均速率。漏桶強制平滑輸出：無論輸入流量多不規則，輸出始終是均勻的固定速率，不允許任何突發。API 限流通常用令牌桶：正常用戶的行為本來就有突發性（批次操作、頁面載入觸發多個 API），用令牌桶允許合理突發，用戶體驗更好；同時通過設定桶大小限制最大突發量。漏桶適合保護後端服務（如資料庫），將不規則的前端流量整形為均勻的後端請求。',
         keywords: ['Token Bucket', 'Leaky Bucket', 'Burst', 'Smooth', 'Rate Limit Service'],
+      },
+      {
+        question: '如何在 Redis 中實現「滑動窗口」限流？',
+        answer: "使用 Redis 的 **zset (Sorted Set)**。將用戶 ID 作為 Key，毫秒戳作為 score 和 value。流程：(1) `ZREMRANGEBYSCORE key 0 (now - window)` 移除窗口外的數據；(2) `ZCARD key` 獲取窗口內數據量，判斷是否超過閾值；(3) 若未超過，`ZADD key now now` 加入當前請求並 `EXPIRE`。資深視角：此方案需用 **Lua Script** 保證操作原子性，防止在高並發下計數器不準確。",
+        keywords: ['Sliding Window', 'Redis zset', 'Lua Script', 'Atomicity'],
+      },
+      {
+        question: '面對突發流量 (Traffic Spike)，固定窗口限流會有哪些問題？',
+        answer: "主要問題是「窗口邊界效應」。例如限制 1 分鐘 100 次，攻擊者在 0:59 發起 100 次請求，1:01 又發起 100 次。雖然各自窗口內都沒超限，但在 2 秒內實際上發出了 200 次請求，可能壓垮後端。滑動窗口或令牌桶能有效解決此問題。",
+        keywords: ['Fixed Window', 'Traffic Spike', 'Boundary Problem', 'Rate Limiting'],
       },
     ],
   },
@@ -193,6 +253,16 @@ export const algorithms = {
         answer: '使用大小為 K 的 Min Heap（小根堆）：堆頂是當前 Top-K 中最小的元素。對每個新到來的元素：若元素 > 堆頂，彈出堆頂，插入新元素，重新堆化（O(log K)）；否則跳過。遍歷完所有 n 個元素後，堆中剩餘的 K 個元素就是 Top-K，總時間 O(n log K)，空間 O(K)。對比排序整個陣列 O(n log n)，在 K << n 時效能優勢明顯。分散式 Top-K：每台機器本地計算 Top-K，再把所有機器的 Top-K 彙總後做最終排序（類似 MapReduce 的 Reduce 階段），正確性：最終 Top-K 一定在每台機器 Top-K 的合集中。',
         keywords: ['Min Heap', 'O(n log K)', 'Streaming', 'Distributed Top-K', 'Quick Select'],
       },
+      {
+        question: '解釋 HyperLogLog 的原理及為什麼它能在 12KB 內統計幾十億數據？',
+        answer: "HyperLogLog 是一種基數估算 (Cardinality Estimation) 算法。它不存儲數據本身，而是將數據雜湊成 64-bit 後，統計二進位中前導 0 的最大長度 $k$。根據伯努利試驗原理，總數量 $n \approx 2^k$。通過分桶採樣取平均值 (Harmonic Mean) 並修正誤差，實現了極高的壓縮率。資深視角：這類「空間換精確度」的算法 (Probabilistic Data Structures) 是大數據系統 (如 BigQuery, Redis) 的核心技術。",
+        keywords: ['HyperLogLog', 'Cardinality', 'Probabilistic DS', 'Redis'],
+      },
+      {
+        question: '什麼是 Count-Min Sketch？它主要用來解決什麼問題？',
+        answer: "Count-Min Sketch 是一個頻率估算結構，類似 Bloom Filter，但每個位元是一個計數器。它解決的是在大規模流量中估算每個元素出現次數 (Frequency Estimation) 的問題 (如 Top-K 頻次)。優點是固定內存且支持累加；缺點是會「高估」頻率 (因為雜湊碰撞)，但從不低估。",
+        keywords: ['Count-Min Sketch', 'Frequency', 'Top-K', 'Big Data'],
+      },
     ],
   },
 
@@ -219,6 +289,16 @@ export const algorithms = {
         question: 'Trie 和 HashMap 的字串查找，哪個更快？各有什麼優缺點？',
         answer: '查找速度：Trie O(L)（L=字串長度），HashMap 均攤 O(L)（雜湊計算需要遍歷整個字串）——點查上兩者接近。Trie 的獨特優勢：(1) 前綴操作天然 O(L)，HashMap 不支援前綴查詢（需要遍歷所有 key）；(2) 字串字典序遍歷：DFS Trie 即可按字母序輸出所有 key，HashMap 無序；(3) 最長前綴匹配（路由表）：Trie 天然支援，HashMap 需要遍歷所有可能前綴。HashMap 的優勢：(1) 記憶體效率高（Trie 節點數 = 所有 key 的字元總數，有大量指針開銷）；(2) 隨機存取效能更好（CPU Cache 友好）。選擇：純粹的 Key-Value 儲存選 HashMap；需要前綴/自動補全/路由匹配選 Trie；記憶體敏感時用 Radix Trie（壓縮版）。',
         keywords: ['Prefix Match', 'Autocomplete', 'AC Automaton', 'Radix Trie', 'Cache Friendly'],
+      },
+      {
+        question: '解釋 KMP 算法中「部分匹配表」(Next Array) 的作用？',
+        answer: "Next Array 記錄了模式串中每個前綴子串的「最長相等前後綴長度」。當主串與模式串在 $j$ 位置失配時，不需要回溯主串指針，而是根據 Next[j] 直接跳轉到下一個可能匹配的位置。資深視角：KMP 解決的是單一模式串的匹配問題；如果有大量關鍵字需要同時匹配 (如過濾 1000 個髒字)，則應選用 **Aho-Corasick (AC) 自動機**。",
+        keywords: ['KMP', 'Next Array', 'String Matching', 'AC Automaton'],
+      },
+      {
+        question: '什麼是編輯距離 (Edit Distance)？它在搜索引擎中如何應用？',
+        answer: "編輯距離 (Levenshtein Distance) 是指將字串 A 轉為 B 所需的最少操作次數（插入、刪除、替換）。在搜索引擎中，用於實現「拼寫糾錯」 (Did you mean?)：當用戶查詢一個詞無結果時，後台會在 Trie 樹中查找編輯距離 $\le 2$ 的正確候選詞推薦給用戶。",
+        keywords: ['Edit Distance', 'Spell Check', 'Dynamic Programming', 'Levenshtein'],
       },
     ],
   },

@@ -41,6 +41,16 @@ export const os = {
         answer: 'Thread 切換約 0.5-3μs，Process 切換 2-10μs，Goroutine 切換約 100-300ns。代價來源：Register 儲存恢復、Kernel/User 空間切換、TLB/Cache 失效。減少方式：(1) 使用協程（Goroutine/Green Thread）在使用者空間排程；(2) 減少 Thread 數量，避免頻繁阻塞；(3) 使用 CPU Affinity 綁定 Thread 到固定 Core，保持 Cache 熱度；(4) Event Loop 模型完全避免阻塞式 I/O 等待。',
         keywords: ['TLB Flush', 'Cache Cold', 'Goroutine', 'CPU Affinity', 'Event Loop'],
       },
+      {
+        question: '什麼是 Zombie Process（殭屍行程）與 Orphan Process（孤兒行程）？如何處理？',
+        answer: 'Zombie Process：子行程結束但父行程尚未呼叫 `wait()` 或 `waitpid()` 讀取其結束狀態，導致 PCB 殘留在系統中。Orphan Process：父行程先於子行程結束，子行程會被 init/systemd（PID 1）接管，這不是問題。處理 Zombie：父行程應捕獲 `SIGCHLD` 訊號並在處理函式中呼叫 `wait()`，或者連續 `fork()` 兩次讓祖父行程接管。若父行程已死，init 會自動清理其遺留的殭屍子行程。',
+        keywords: ['Zombie', 'Orphan', 'waitpid', 'SIGCHLD', 'PID 1'],
+      },
+      {
+        question: 'fork() 之後發生了什麼？Copy-on-Write (COW) 的原理？',
+        answer: 'fork 建立一個子行程，它是父行程的幾乎完整複本。為了效能，Linux 使用 COW 技術：父子行程最初共享同一個實體記憶體分頁，並將這些頁設為唯讀。只有當其中一個行程嘗試「寫入」時，Kernel 才會觸發 Page Fault，拷貝該頁並建立私有複本。這大幅減少了 fork 的初始開銷，這也是 Redis BGSAVE 能高效執行快照而不阻塞大量記憶體的原因。',
+        keywords: ['fork', 'COW', 'Page Fault', 'Redis BGSAVE'],
+      },
     ],
   },
 
@@ -78,8 +88,18 @@ export const os = {
       },
       {
         question: '為什麼 Redis 和 MySQL 要禁用 Swap？',
-        answer: 'Redis 和 MySQL 的設計假設熱點資料常駐記憶體，存取延遲在微秒級。一旦資料被 OS 換到 Swap（磁碟），存取延遲立即升至毫秒甚至數百毫秒，造成請求超時積壓。對 Redis 應設 `vm.swappiness=0`（不主動換出）；對生產環境的 MySQL 應分配足夠 RAM 並設 `vm.swappiness=1`。更根本的做法是使用 cgroups 限制服務的記憶體上限，並設定 OOM Score 保護關鍵行程。',
+        answer: 'Redis 和 MySQL 的設計假設熱點資料常駐記憶體，存取延遲在微秒級。一旦資料被 OS 換到 Swap（磁碟），存取延遲立即升至毫秒甚至數百毫秒，造成請求超時積壓。對 Redis 應設 `vm.swappiness=0`（不主動換出）；對生產環境的 MySQL 應分配足夠 RAM 並設 `vm.swappiness=1`。更根本的做法是使用 cgroups 限制服務의 記憶體上限，並設定 OOM Score 保護關鍵行程。',
         keywords: ['Page Fault', 'Swappiness', 'OOM Killer', 'cgroups', '延遲'],
+      },
+      {
+        question: '解釋虛擬記憶體與物理記憶體，以及 Page Fault 的類型？',
+        answer: '虛擬記憶體賦予每個行程獨立的連續位址空間。Page Fault 分兩類：(1) Soft Page Fault：頁已在實體記憶體中，但尚未分配給該行程（如共享庫），只需更新頁表即可；(2) Hard Page Fault（Major PF）：頁不在記憶體中，需從磁碟載入，代價昂貴。資深視角：頻繁 Hard PF 代表實體記憶體嚴重不足，會導致系統進入「Thrashing」震盪狀態，CPU 被 I/O 等待完全佔滿。',
+        keywords: ['Virtual Memory', 'Soft PF', 'Hard PF', 'MMU', 'Thrashing'],
+      },
+      {
+        question: '記憶體碎片（Internal vs External Fragmentation）是如何產生的？',
+        answer: 'Internal Fragmentation：分頁機制下，即使行程只申請 1 位元組，OS 也會分配一個 4KB 頁，頁內未用空間即為內部碎片。External Fragmentation：分段機制（Segment）下，頻繁申請與釋放不同大小的記憶體塊，導致實體記憶體中雖然剩餘總量夠，但沒有足夠大的連續空間。解法：分頁機制（Paging）透過將不連續的物理頁映射為連續虛擬位址，完美解決了外部碎片問題。',
+        keywords: ['Internal Flow', 'External Flow', 'Paging', 'Best-fit'],
       },
     ],
   },
@@ -117,6 +137,16 @@ export const os = {
         answer: 'Reactor（同步非阻塞）：Framework 通知應用程式「某個 FD 可以讀了」，應用程式自己去呼叫 `read()`，資料從 Kernel Buffer 拷貝到使用者 Buffer 這個動作由應用程式完成。代表：nginx、Redis、Node.js。Proactor（非同步）：Framework 不僅通知可讀，還已經把資料拷貝到使用者 Buffer 了，應用程式直接處理資料。代表：Windows IOCP、io_uring（部分模式）。區別核心：誰負責將資料從 Kernel Buffer 拷貝到使用者 Buffer——Reactor 是使用者負責，Proactor 是 OS 負責。',
         keywords: ['Reactor', 'Proactor', 'IOCP', 'io_uring', 'Zero-Copy'],
       },
+      {
+        question: '解釋 epoll 的 LT (Level Triggered) 與 ET (Edge Triggered) 模式？',
+        answer: 'LT（水平觸發）：只要 FD 有資料，`epoll_wait` 就會一直返回。安全性高，不易掉包。ET（邊緣觸發）：只有當 FD 狀態從不可讀變可讀時才通知一次。性能極限更高，但程式必須一次性把資料讀完（通常需用循環 `read` 直到返回 EAGAIN），否則剩餘資料會永遠漏掉。高效能 Server 如 Nginx 通常使用 ET 模式。',
+        keywords: ['epoll', 'ET', 'LT', 'EAGAIN', 'Nginx'],
+      },
+      {
+        question: '什麼是 Zero-Copy（零拷貝）技術？',
+        answer: '傳統 I/O 需要 4 次拷貝和 4 次上下文切換。零拷貝技術如 `sendfile()` 或 `mmap()` 旨在減少這些開銷。`sendfile()` 讓 Kernel 直接將資料從 Read Buffer 拷貝到 Socket Buffer，或者透過 DMA 直接從硬碟傳送到網路卡。這對靜態文件分發（如 Nginx 傳送圖片、Kafka 傳送日誌）至關重要，能大幅榨取硬體頻寬性能。',
+        keywords: ['sendfile', 'mmap', 'DMA', 'Kafka', 'Performance'],
+      },
     ],
   },
 
@@ -147,6 +177,16 @@ export const os = {
         question: 'Go 的 Goroutine 和 OS Thread 相比，為何能支撐更高的並發？',
         answer: '三個核心優勢：(1) 記憶體：OS Thread 預設 Stack 1-8MB，Goroutine 初始僅 2KB，可動態增長至 1GB，百萬 Goroutine 的記憶體約 2GB；(2) 切換代價：OS Thread 切換需要 Kernel 介入，約 1-5μs；Goroutine 切換在使用者空間完成，約 100-300ns；(3) 排程策略：GMP 模型讓 Goroutine 在系統呼叫阻塞時，P 立即去執行其他 Goroutine，無需等待被阻塞的 OS Thread，避免了 Thread 資源浪費。',
         keywords: ['GMP', 'Work Stealing', 'Stack Growth', 'System Call Blocking'],
+      },
+      {
+        question: '談談 Node.js 的單執行緒模型。它為什麼適合 I/O 密集型而不適合 CPU 密集型？',
+        answer: 'Node.js 的 JavaScript 執行是單執行緒的，透過 Event Loop 異步處理 I/O，這避免了多執行緒的 Context Switch 和鎖競爭。當遇到 I/O 操作時，Node 會將任務交給 OS 或 Thread Pool (libuv)，自己繼續處理下一個請求。但如果執行一段耗時的 CPU 計算（如加密/解密、大循環），整個 Event Loop 會被阻塞，導致所有請求停滯。解法是使用 `worker_threads` 或將計算任務外包給 Microservice。',
+        keywords: ['Event Loop', 'libuv', 'Single-Threaded', 'Non-blocking'],
+      },
+      {
+        question: '解釋 CSP 與 Actor 模型？',
+        answer: 'CSP（Go）：透過 Channel 通訊，強調「不要透過共享記憶體來通訊，而要透過通訊來共享記憶體」。發送者與接收者是解耦的，但對 Channel 本身有依賴。Actor（Akka/Erlang）：一切皆 Actor，每個 Actor 有自己的 Mailbox，透過直接發送 Message 通訊。Actor 之間完全隔離，天然分散式，適合建構極高可用性的容錯系統。',
+        keywords: ['CSP', 'Actor', 'Channel', 'Mailbox', 'Erlang'],
       },
     ],
   },
@@ -179,6 +219,16 @@ export const os = {
         answer: 'synchronized 是 JVM 關鍵字，隱式加/解鎖，JDK 1.6 後加入偏向鎖→輕量鎖→重量鎖的升級機制（低競爭時接近 CAS 效能）。ReentrantLock 是 Java 類，需手動 lock/unlock，提供更多功能：(1) `tryLock(timeout)` 超時獲取鎖；(2) `lockInterruptibly()` 可中斷等待；(3) 公平鎖（按 FIFO 順序獲取）；(4) 多個 Condition 實現更精細的等待/通知。選擇：簡單互斥場景用 synchronized（JIT 優化更佳，代碼清晰）；需要超時、中斷、公平性或多個等待條件時用 ReentrantLock。',
         keywords: ['偏向鎖', '輕量鎖', '重量鎖', 'AQS', 'Condition', 'CAS'],
       },
+      {
+        question: '解釋分散式鎖的實現方式及其優缺點？',
+        answer: '(1) Redis：使用 `SETNX` + `EXPIRE`。優點是快、吞吐高；缺點是 Master 宕機可能導致鎖丟失（可用 Redlock 緩解但有爭議）。(2) Zookeeper：使用臨時順序節點。優點是強一致性、安全性高、自動釋放（Session 斷開）；缺點是效能低於 Redis，對 ZK 有寫入壓力。適合強一致場景。(3) MySQL：`SELECT ... FOR UPDATE`。優點是簡單，無需依賴新組件；缺點是 DB 壓力大，不適合高頻長鎖。',
+        keywords: ['Distributed Lock', 'Redlock', 'Zookeeper', 'Strong Consistency'],
+      },
+      {
+        question: '什麼是 Read-Write Lock（讀寫鎖）與 Optimistic Reading？',
+        answer: '讀寫鎖（如 `ReentrantReadWriteLock`）允許多個 Thread 同時讀，但只有一個 Thread 能寫。適合「讀多寫少」場景。進階：`StampedLock` (Java 8) 提供了樂觀讀模式，讀取時不加任何鎖（甚至不修改 AQS 狀態），讀完後校驗版本號。如果校驗失敗才升級為悲觀讀鎖。這能顯著減少讀多寫少場景下的鎖競爭。',
+        keywords: ['Read-Write Lock', 'StampedLock', 'Optimistic Reading'],
+      },
     ],
   },
 
@@ -205,6 +255,16 @@ export const os = {
         question: 'CFS 排程器如何實現優先級？',
         answer: 'CFS 使用 vruntime（虛擬運行時間）作為公平性度量。實際運行時間乘以一個權重因子就得到 vruntime：`vruntime += actual_runtime × (1024 / weight)`，其中 weight 由 nice 值決定（nice -20 的 weight = 88761，nice 0 = 1024，nice +19 = 15）。nice 值低的行程 weight 大，vruntime 增長慢，CFS 會更頻繁地選擇它（因為它的 vruntime 更小）。這樣不需要直接分配固定時間片，而是透過 vruntime 的增長速率差異，自然地讓高優先級行程佔用更多 CPU。',
         keywords: ['vruntime', 'nice', 'weight', '紅黑樹', 'CFS'],
+      },
+      {
+        question: '解釋 CPU 親和性（CPU Affinity）及其優勢？',
+        answer: 'CPU 親和性是指將特定行程或執行緒綁定到固定的 CPU 核心。優勢：(1) 提高 Cache 命中率 (L1/L2)，避免 Core 切換導致的資料失效；(2) 減少 Context Switch 頻率（若 CPU 負載均衡做得好）；(3) 降低跨 NUMA 節點訪問記憶體的延遲。對於 Nginx Worker 或 Redis 這種高效能應用，綁核是必備的性能優化手段。',
+        keywords: ['CPU Affinity', 'Cache Locality', 'NUMA', 'Nginx'],
+      },
+      {
+        question: '談談什麼是並行 (Parallelism) 與並發 (Concurrency)？',
+        answer: '並發 (Concurrency)：在一段時間內處理多個任務的能力。單核 CPU 透過時間片輪轉實現「看起來」同時執行，本質是任務交替。並行 (Parallelism)：在同一時刻執行多個任務。這需要多個 CPU 核心。資深比喻：並發是兩個人共用一個咖啡機（交替使用）；並行是兩個人分別使用兩個咖啡機（同時執行）。',
+        keywords: ['Concurrency', 'Parallelism', 'Context Switching', 'Multi-core'],
       },
     ],
   },

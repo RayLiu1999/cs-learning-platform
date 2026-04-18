@@ -27,6 +27,16 @@ export const database = {
         answer: "三個優勢：(1) B+ Tree 所有資料在葉子節點，非葉子節點只存 Key，同樣的磁碟 Page 能存更多 Key，樹高更低，點查 I/O 更少；(2) B+ Tree 葉子節點有雙向鏈表連接，範圍查詢只需找到起點後順序掃描鏈表，無需回溯父節點；B Tree 的範圍查詢需要中序遍歷，有大量隨機 I/O；(3) 資料庫的全表掃描或排序操作（如 ORDER BY）只需掃描葉子節點鏈表，效率遠高於 B Tree 的中序遍歷。缺點：B+ Tree 更新需要維護葉子節點有序性，可能引發頁分裂，成本比 B Tree 高。",
         keywords: ['Page', 'Leaf Node', 'Range Query', 'Page Split', 'B Tree 差異'],
       },
+      {
+        question: 'InnoDB 的 Redo Log 和 Binlog 有什麼區別？為什麼需要兩者？',
+        answer: "(1) 層次不同：Redo Log 是 InnoDB 引擎層的物理日誌，記錄的是「在某個數據頁做了什麼修改」；Binlog 是 MySQL Server 層的邏輯日誌，記錄的是 SQL 語句或行紀錄的變更。(2) 用途不同：Redo Log 用於 Crash Recovery（宕機恢復），保證持久性；Binlog 用於數據備份、主從複製。(3) 刷盤機制：Redo Log 是循環寫，空間固定；Binlog 是追加寫，不覆蓋舊文件。兩者協作（兩階段提交）確保了數據的一致性。",
+        keywords: ['Redo Log', 'Binlog', 'Crash Recovery', '2PC'],
+      },
+      {
+        question: '解釋 InnoDB 的 Change Buffer 是什麼？',
+        answer: "Change Buffer 是一種特殊數據結構，用於緩存對「非唯一二級索引」頁的修改。當修改的索引頁不在 Buffer Pool 時，先記錄在 Change Buffer，等未來該頁被讀取時再合併（Merge）。好處：減少了隨機 I/O，特別是針對寫多讀少的非聚集索引操作。不適用場景：唯一索引（因為必須校驗唯一性，必須把頁讀入內存）。",
+        keywords: ['Change Buffer', 'Secondary Index', 'I/O Optimization'],
+      },
     ],
   },
 
@@ -57,6 +67,16 @@ export const database = {
         question: '為什麼主鍵推薦使用自增 INT 而非 UUID？',
         answer: "核心原因：B+ Tree 葉子節點維護有序性。自增 INT 每次插入都在葉子鏈表末尾追加，不需要頁分裂（Page Split）。UUID 是隨機值，新資料可能插入 B+ Tree 中間任意位置，導致：(1) 目標 Page 可能不在 Buffer Pool 中，觸發磁碟 I/O；(2) Page 分裂和節點合併頻繁發生，產生大量隨機寫；(3) 索引碎片增加，佔用空間更大。如果業務需要 UUID（如分散式環境無法保證自增），可使用 UUIDv7（時間排序的 UUID）或 ULID，保持時間順序性，兼顧唯一性和插入效能。",
         keywords: ['Page Split', 'Clustered Index', 'UUIDv7', 'ULID', 'Random Write'],
+      },
+      {
+        question: '解釋最左前綴原則，以及它的失效場景？',
+        answer: "聯合索引 `(a, b, c)` 是先按 a 排序，a 同時按 b 排序...。最左前綴指：查詢必須從 a 開始。失效：(1) 忽略 a 直接查 b (如 `WHERE b=1`)；(2) 範圍查詢後面的列 (如 `WHERE a>1 AND b=1` 中 b 不走索引)；(3) a 列進行了函數運算。資深技巧：若 a 列基數小（只有兩值），可透過 SQL 重寫將其轉為 a IN (val1, val2) 來「跳過」前導列查詢後續列索引（Index Skip Scan）。",
+        keywords: ['Leftmost Prefix', 'Composite Index', 'Index Skip Scan'],
+      },
+      {
+        question: '什麼是索引下推 (Index Condition Pushdown, ICP)？',
+        answer: "MySQL 5.6+ 優化：在遍歷索引時，先判定索引中包含的條件（即使該條件不能用於定位 B+ Tree），過濾掉不符合條件的行後再回表。例如：`(name, age)` 聯合索引，`WHERE name LIKE 'z%' AND age = 25`。ICP 會在索引遍歷階段過濾 age=25，有效減少回表次數。EXPLAIN 看到 `Using index condition` 即為使用 ICP。",
+        keywords: ['ICP', 'MySQL 5.6', 'Optimization', 'Index Traversal'],
       },
     ],
   },
@@ -89,6 +109,16 @@ export const database = {
         answer: "MVCC 解決的是快照讀（普通 SELECT）的幻讀：事務開始時建立 ReadView，整個事務看到的是一致的快照，不會看到後來插入的新行。但當前讀（Current Read，即 `SELECT ... FOR UPDATE`、`UPDATE`、`DELETE`）不走 MVCC，而是直接讀最新版本，此時可能出現幻讀。InnoDB 用 Gap Lock 和 Next-Key Lock 解決當前讀的幻讀：對查詢範圍內的 Gap 加鎖，阻止其他事務在此範圍插入。但若先做快照讀再做當前讀，中間可能插入新行，仍會出現幻讀。完全避免幻讀：使用 Serializable 隔離級別。",
         keywords: ['Snapshot Read', 'Current Read', 'Gap Lock', 'Next-Key Lock', 'ReadView'],
       },
+      {
+        question: '解釋 InnoDB 的兩階段鎖協議 (Two-Phase Locking, 2PL)？',
+        answer: "2PL 規定加鎖和解鎖分兩階段：(1) 加鎖階段：隨時申請鎖；(2) 釋放階段：統一在 `COMMIT` 或 `ROLLBACK` 時釋放所有鎖。中間不能單獨解鎖。這意味著在事務中，越早加鎖、操作越慢，鎖佔用的時間就越長。資深視角：將高併發、高衝突的 SQL 操作盡量放在事務的最後一步（如扣減庫存），能顯著縮短持鎖時間，提升系統吞吐。",
+        keywords: ['2PL', 'Lock Contention', 'Deadlock', 'Transaction Cycle'],
+      },
+      {
+        question: '什麼是死鎖 (Deadlock)？如何偵測與預防？',
+        answer: "兩個事務互相持有彼此需要的鎖。InnoDB 的死鎖偵測機制（wait-for graph）會主動回滾權重較小的事務來解除僵局。預防：(1) 按相同順序加鎖；(2) 一次性獲取所有鎖；(3) 加鎖時使用 `NOWAIT` 或超時時間（`innodb_lock_wait_timeout`）。",
+        keywords: ['wait-for graph', 'Deadlock Detection', 'Lock Timeout'],
+      },
     ],
   },
 
@@ -120,6 +150,16 @@ export const database = {
         answer: "Zookeeper 的 Zab 協議保證了強一致性（Linearizability）：所有寫入在 Leader 提交後才返回，讀取可能稍舊（但可用 sync() 強制讀最新）。設計為 CP 的原因：其典型使用場景要求強一致——(1) 分散式鎖（確保只有一個節點持有鎖）；(2) Leader Election（確保全局只有一個 Leader，如 Kafka Controller、HBase Master）；(3) 設定管理（所有節點看到相同的設定版本）。若設計為 AP，分區時兩個節點都認為自己是 Leader，造成腦裂（Split Brain）。代價：ZooKeeper 在網路分區時拒絕寫入，服務降級，但不會返回錯誤資料。",
         keywords: ['Zab', 'Leader Election', 'Split Brain', 'Linearizability', 'Quorum'],
       },
+      {
+        question: '解釋 Raft 算法的 Leader 選取與日誌複製流程？',
+        answer: "Raft 通過 Heartbeat 維持 Leader。流程：Candidate 超時發起 RequestVote → 超過半數同意成為 Leader → 接收 Client 寫入請求並異步廣播至 Follower → 超過半數 ACK 後進行 Commit。優勢：Leader 控制一切， Follower 被動接受。發生網絡分區時，只有包含半數以上節點的分區能選出 Leader 並繼續服務。這就是經典的 Quorum 機制。",
+        keywords: ['Raft', 'Consensus', 'Election Timeout', 'Quorum'],
+      },
+      {
+        question: '什麼是 Paxos 與 Raft 的主要區別？',
+        answer: "Paxos 是共識算法的祖師爺，但證明和實現都極其複雜。Raft 是 Paxos 的簡化版，更工程化。核心區別：Raft 強調 Leader 的中心化作用，一切從 Leader 向下流動；Paxos 則更平等，每個節點都具備提議權 (Proposer)。工程界絕大多數新系統 (etcd, Consul, Kafka Raft) 選擇 Raft。",
+        keywords: ['Consensus', 'Paxos', 'Raft', 'Decentralized vs Centralized'],
+      },
     ],
   },
 
@@ -147,6 +187,16 @@ export const database = {
         answer: "連接池維護一組預先建立的資料庫連接，應用從池中借用連接，使用後歸還，避免頻繁建立/銷毀 TCP 連接和 MySQL 認證的開銷。設定不當的問題：(1) 池大小過小：並發請求超過池大小時，請求排隊等待，導致超時（常見症狀：`Timeout waiting for connection from pool`）；(2) 池大小過大：資料庫端同時 Active 連接數超過 `max_connections`，資料庫拒絕連接，且大量連接本身消耗記憶體和 Mutex；(3) 連接洩漏：應用代碼異常路徑沒有歸還連接，池慢慢耗盡；(4) Idle 連接被 MySQL 或防火牆關閉（`wait_timeout`），應設定 `testOnBorrow` 或 `keepAliveTime`。推薦值：`pool_size = max_threads × 0.9`（留 10% 給管理查詢）。",
         keywords: ['Connection Pool', 'max_connections', 'Connection Leak', 'HikariCP', 'wait_timeout'],
       },
+      {
+        question: 'MySQL 的水平切分 (Sharding) 如何解決跨分片 JOIN？',
+        answer: "主要三方案：(1) 資料冗餘：在每個分片都存一份小規模的常用數據 (字典表)；(2) 應用層聚合：分別去不同分片查數據，拿到應用程序進行 Memory Join；(3) 全局表：使用中間件 (如 MyCat, ShardingSphere) 對全局表進行廣播寫。最佳實踐：重新設計 Schema 避免跨片 JOIN。",
+        keywords: ['Sharding', 'Global Table', 'Application Join'],
+      },
+      {
+        question: '什麼是資料庫的垂直拆分與水平拆分？',
+        answer: "垂直拆分：按列/業務拆分（如：把 UserInfo 表拆成 UserBase 和 UserDetails），解決單表列過多、I/O 性能低。水平拆分：按行拆分（如：按 user_id % 10 分到 10 個庫），解決單表行數過多、單機容量瓶頸。垂直拆性能瓶頸，水平拆儲存與併發瓶頸。",
+        keywords: ['Vertical Split', 'Horizontal Split', 'Microservices'],
+      },
     ],
   },
 
@@ -171,8 +221,18 @@ export const database = {
     interview: [
       {
         question: 'Redis 如何實現分散式鎖？Redlock 的爭議是什麼？',
-        answer: "簡單實現：`SET key value NX EX 30`（原子操作，不存在才設定，30 秒過期）。釋放時必須驗證 value 是自己設定的（避免誤刪他人鎖）：先 GET 比較再 DEL，但這兩步不原子，需用 Lua Script 確保原子性。Redlock（多節點）：在 N 個獨立 Redis 節點上設定鎖，需要 N/2+1 個節點成功才視為獲鎖。爭議（Martin Kleppmann 的批評）：在系統出現 GC Pause 或 Clock Skew 時，Redlock 的安全性保證可能失效——鎖 TTL 到期後，另一個客戶端獲得了鎖，但原客戶端 GC 恢復後仍認為自己持有鎖，造成兩個客戶端同時操作。正確實現需要 Fencing Token（單調遞增的版本號），資源操作時驗證 Token 是否是最新的。",
+        answer: "簡單實現：`SET key value NX EX 30`（原子操作，不存在才設定，30 秒過期）。釋放時必須驗證 value 是自己設定的（避免誤刪他人鎖）：先 GET 比較再 DEL，但這兩步不原子，需用 Lua Script 確保原子性. Redlock（多節點）：在 N 個獨立 Redis 節點上設定鎖，需要 N/2+1 個節點成功才視為獲鎖。爭議（Martin Kleppmann 的批評）：在系統出現 GC Pause 或 Clock Skew 時，Redlock 的安全性保證可能失效——鎖 TTL 到期後，另一個客戶端獲得了鎖，但原客戶端 GC 恢復後仍認為自己持有鎖，造成兩個客戶端同時操作。正確實現需要 Fencing Token（單調遞增的版本號），資源操作時驗證 Token 是否是最新的。",
         keywords: ['SET NX EX', 'Lua Script', 'Redlock', 'Fencing Token', 'GC Pause', 'Clock Skew'],
+      },
+      {
+        question: 'Redis 的持久化機制 RDB 與 AOF 有何區別？',
+        answer: "RDB：定時的全量快照，體積小、恢復快，但會丟失最後兩次快照間的數據。AOF：記錄每條寫命令日誌，實時性高，但文件體積大、恢復慢。Redis 4.0+ 推薦混合持久化：RDB 快照做底層數據，AOF 作為增量。這是目前最均衡的平衡點。",
+        keywords: ['RDB', 'AOF', 'Snapshot', 'Persistence'],
+      },
+      {
+        question: '為什麼 Redis 是單線程卻很快？',
+        answer: "三大原因：(1) 純內存操作，沒有磁碟 I/O 開銷；(2) 高效的數據結構（SDS, SkipList）；(3) I/O 多路復用模型（epoll），單線程避免了上下文切換與鎖競爭。注意：Redis 6.0 引入多線程主要用於網絡 I/O 讀寫，核心命令執行依然是單線程的。",
+        keywords: ['Single Thread', 'In-memory', 'I/O Multiplexing', 'Redis 6.0'],
       },
     ],
   },
@@ -200,6 +260,16 @@ export const database = {
         question: '什麼是 N+1 查詢問題？如何在 ORM 中解決？',
         answer: "N+1 問題：查詢 N 個父物件後，對每個父物件各發一次查詢獲取子物件，共 N+1 次查詢。例如：先 `SELECT * FROM posts LIMIT 10`（1 次），再對每篇文章各執行 `SELECT * FROM comments WHERE post_id=?`（10 次），共 11 次查詢。解法：(1) Eager Loading：ORM 提供 `includes`（Rails）/`with`（Laravel）/`@EntityGraph`（JPA），自動用 IN 查詢批次載入子物件（`SELECT * FROM comments WHERE post_id IN (1,2,...10)`）；(2) DataLoader 模式（GraphQL 場景）：批次和快取多個請求，相同 key 的查詢合並；(3) JOIN 查詢：直接在 SQL 層面關聯，但可能造成資料重複（需注意 DISTINCT）。",
         keywords: ['Eager Loading', 'Lazy Loading', 'DataLoader', 'Batch Query', 'ORM'],
+      },
+      {
+        question: '解釋 SQL 注入 (SQL Injection) 及其防御措施？',
+        answer: "攻擊者通過在輸入框輸入 SQL 片段 (如 `' OR '1'='1`) 來改變原始 SQL 語義。防御：(1) **參數化查詢 (Prepared Statement)**：預編譯 SQL，輸入僅作為數據處理，不作為指令；(2) 輸入過濾與轉義；(3) 最小權限原則：DB 帳號不應有 DROP 表等危險權限。",
+        keywords: ['Prepared Statement', 'SQL Injection', 'Security'],
+      },
+      {
+        question: '為什麼不建議在生產環境使用 `SELECT *`？',
+        answer: "(1) 增加 I/O：傳回不必要的欄位浪費頻寬，特別是 TEXT/BLOB 列；(2) 破壞索引：導致無法使用覆蓋索引 (Covering Index)，必須回表；(3) 代碼穩定性：表結構變更可能導致應用層代碼 Mapping 報錯。",
+        keywords: ['Performance', 'Covering Index', 'Bandwidth'],
       },
     ],
   },

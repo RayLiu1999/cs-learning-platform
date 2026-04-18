@@ -31,6 +31,16 @@ export const networking = {
         answer: '交換器工作在 L2（資料鏈路層），根據 MAC 位址進行幀轉發，維護 MAC Address Table（記錄 MAC→Port 映射）。交換器在同一廣播域內連接裝置，不能連接不同子網。路由器工作在 L3（網路層），根據 IP 位址進行封包路由，維護 Routing Table，連接不同子網，決定封包走哪條路到達目的地。類比：交換器是同一個公司樓層內的快遞分揀，路由器是城際快遞轉運（根據城市/地區號決定走向）。三層交換器（L3 Switch）同時具備 L2 轉發和 L3 路由能力，常用於資料中心內部。',
         keywords: ['MAC Table', 'ARP', 'Routing Table', 'L2', 'L3', 'Broadcast Domain'],
       },
+      {
+        question: '解釋 ARP 的工作原理及其安全性問題？',
+        answer: 'ARP 用於將 IP 地址轉換為實體 MAC 地址。當主機需要發送封包到某 IP 時，會先廣播 ARP Request。收到回應後，將 IP-MAC 映射存入 ARP Cache。安全性：ARP 是無狀態的，主機可以發送偽造的 ARP Reply（即使沒人請求），導致其他主機的 ARP 表被「污染」。這就是 ARP Spoofing，攻擊者可以藉此監聽所有流量（MITM）。防護：使用靜態 ARP 綁定或使用具備「動態 ARP 檢測 (DAI)」功能的進階交換器。',
+        keywords: ['ARP', 'MAC', 'Broadcasting', 'ARP Spoofing', 'DAI'],
+      },
+      {
+        question: '什麼是 DHCP？它的四步過程是什麼？',
+        answer: 'DHCP 用於動態分配 IP 地址。四步過程：(1) Discover（Client 廣播尋找 Server）；(2) Offer（Server 提供可用 IP）；(3) Request（Client 請求使用該 IP）；(4) ACK（Server 確認租約）。這發生在 UDP 層（Port 67/68）。為了避免廣播風暴，大型網絡會使用 DHCP Relay 將請求轉發到集中式的 DHCP Server。',
+        keywords: ['DHCP', 'DORA', 'IP Lease', 'UDP 67/68'],
+      },
     ],
   },
 
@@ -61,6 +71,21 @@ export const networking = {
         question: '為什麼 TCP 握手需要隨機化 ISN（初始序列號）？',
         answer: '若 ISN 從固定值（如 0）開始，攻擊者可以預測序列號，從而注入偽造的 TCP Segment（TCP Sequence Prediction Attack）。隨機化 ISN 讓攻擊者無法猜測當前連線的合法序列號範圍。此外，隨機 ISN 還能避免與舊連線（相同四元組）的殘留封包混淆——如果前一個連線的延遲封包到達，由於序列號不同，新連線會正確忽略它。ISN 的生成通常結合時鐘和偽隨機函數，每 4μs 自增 1（RFC 793），確保在 MSL 內不會重複。',
         keywords: ['ISN', 'Sequence Number', 'TCP Injection', '安全', 'MSL'],
+      },
+      {
+        question: '解釋 TCP 的 SYN Flood 攻擊及解決方案？',
+        answer: 'SYN Flood 利用 TCP 三次握手：攻擊者發送大量 SYN 卻不回最後一個 ACK，導致 Server 的半連線佇列 (SYN Queue) 被佔滿，無法處理正常請求。解決方案：(1) SYN Cookies：Server 在收到 SYN 時不立即分配資源，而是根據五元組計算一個「Cookie」放入隨機序號回傳，直到收到正確的 ACK 才分配空間。(2) 增加 SYN Queue 大小；(3) 減少 SYN-ACK 重傳次數；(4) 使用防火牆過濾惡意 IP。',
+        keywords: ['SYN Flood', 'SYN Cookies', 'Queue Management', 'Security'],
+      },
+      {
+        question: 'TCP vs UDP：本質差異與應用場景？',
+        answer: 'TCP 是面向連線、可靠（重傳、序列號、流量/擁塞控制）、基於位元組流 (Byte Stream) 的協定。適用於：HTTP, FTP, Database。UDP 是無連線、不可靠（盡力而為）、基於資料報 (Datagram) 的協定。適用於：DNS, Video Streaming, Gaming, QUIC (HTTP/3)。核心差別在於「速度」與「保證」的取捨。',
+        keywords: ['Connection-oriented', 'Reliability', 'Throughput', 'Low Latency'],
+      },
+      {
+        question: '什麼是 TCP 粘包/斷包？如何解決？',
+        answer: 'TCP 是「流」式傳輸，沒有明確的資料邊界。發送端發了兩個封包，接收端可能一次 `read()` 讀到兩個（粘包）或只讀到半個（斷包）。這是應用層的問題，與 TCP 無關。解法：(1) 固定長度：每條消息 100 bytes；(2) 包體長度：Header 存放消息長度，Data 隨後；(3) 特殊分隔符：使用 `\r\n` 或特定字節（如 Redis、HTTP）。',
+        keywords: ['Byte Stream', 'Delimiters', 'Header-Payload', 'Serialization'],
       },
     ],
   },
@@ -93,6 +118,16 @@ export const networking = {
         answer: 'Pipeline 雖然允許一次發送多個請求，但回應必須按請求順序返回（Server 端串行處理），前一個慢請求阻塞後面所有請求，仍有隊頭阻塞。HTTP/2 Multiplexing 每個請求是一個獨立的 Stream（帶有 Stream ID），幀可以交錯傳輸，Server 可以亂序回應，Client 根據 Stream ID 組裝回應，完全消除了 HTTP 層的隊頭阻塞。本質差別：Pipeline 是「串行提交、串行回應」；Multiplexing 是「並行提交、並行回應、亂序返回」。',
         keywords: ['Stream', 'Frame', 'HOL Blocking', 'HPACK', 'HTTP/3', 'QUIC'],
       },
+      {
+        question: '解釋 HTTP 狀態碼：301, 302, 304, 401, 403, 502, 504？',
+        answer: '301：永久重定向（瀏覽器會快取路徑變更）；302：暫時重定向；304：資源未更新（協商快取命中）；401：未經授權（需登入）；403：禁止訪問（權限不足）；502：Bad Gateway（網關找不到後端或後端掛了）；504：Gateway Timeout（後端響應超時）。',
+        keywords: ['Status Codes', 'Redirection', 'Cache', 'Gateway'],
+      },
+      {
+        question: '什麼是 Cookie, Session, Token (JWT)？選型依據？',
+        answer: 'Cookie：存在瀏覽器，KV 存儲。Session：存在 Server，Server 傳 ID 給 Cookie，適合中心化系統，安全性高但擴展難。JWT：無狀態 Token，內容加密在 Client，Server 用 Key 驗證。適合微服務和分佈式架構。區別在於：Session 有狀態、存 Server；JWT 無狀態、存 Client。',
+        keywords: ['Auth', 'JWT', 'Session', 'Stateless'],
+      },
     ],
   },
 
@@ -123,6 +158,16 @@ export const networking = {
         question: '為什麼降低 DNS TTL 可以加快 Failover，但也有代價？',
         answer: 'TTL 決定了 DNS 快取的有效期。TTL = 30s 時，故障發生後最多 30s 所有客戶端都能解析到新 IP；TTL = 3600s 時，需要等最多 1 小時。代價：(1) DNS 查詢量增加——TTL 越短，快取命中率越低，DNS 伺服器壓力越大；(2) 延遲增加——更多請求需要實際查詢 DNS；(3) 部分遞迴 DNS 不尊重 TTL（可能有最小 TTL 限制）。最佳實踐：平時設 TTL=300s（5 分鐘），在計劃中的 Failover 前幾小時降低到 30-60s，完成後再升回 300s。',
         keywords: ['TTL', 'DNS Failover', 'GeoDNS', 'Round Robin', 'Anycast'],
+      },
+      {
+        question: '什麼是 DNS 劫持與 HTTP 劫持？如何防範？',
+        answer: 'DNS 劫持：修改 DNS 解析將你導向假網站。解法：使用 HTTPS, DNS over HTTPS (DoH)。HTTP 劫持：運營商在網頁中插入廣告。解法：全站 HTTPS，因為 HTTPS 加密了內容，中間人無法解析並修改 HTML 內容。',
+        keywords: ['DNS Hijacking', 'HTTPS', 'DoH', 'ISP'],
+      },
+      {
+        question: 'CDN 的回源 (Back-to-Origin) 是什麼？如何減少回源次數？',
+        answer: '當 CDN 節點找不到快取或快取過期時，向原本的 Server 請求數據稱為回源。減少方式：(1) 拉長 Cache-Control max-age；(2) 使用快取預熱 (Warm-up)；(3) 設置多級快取；(4) 資源去版本化 (使用 Hash 檔名)。',
+        keywords: ['Origin Server', 'Cache Hit Ratio', 'Purge', 'Preload'],
       },
     ],
   },
@@ -155,6 +200,16 @@ export const networking = {
         answer: '三個層面：(1) 序列化：Protobuf 使用 Tag-Length-Value 二進位格式，比 JSON 體積小 3-10 倍，序列化/反序列化速度快 5-10 倍；(2) 傳輸協定：gRPC 基於 HTTP/2，一個連線多路復用，Header 壓縮（HPACK），避免了 HTTP/1.1 的連線建立開銷；(3) 連線重用：gRPC Channel 長期複用，不像 REST 可能每次請求建立新連線。實測：在微服務場景，相比 REST+JSON，gRPC 通常能提升 2-5 倍吞吐量，P99 延遲降低 30-50%。代價：可讀性差、除錯需要 grpc_cli 或 BloomRPC 工具。',
         keywords: ['Protobuf', 'HTTP/2', 'Multiplexing', 'HPACK', 'IDL', 'Channel'],
       },
+      {
+        question: 'GraphQL 解決了什麼問題？它的缺點是什麼？',
+        answer: '解決 Over-fetching（拿太多數據）和 Under-fetching（接口不夠要打多次請求）。前端可以定義精確的 Query 結構。缺點：(1) N+1 查詢（需用 DataLoader 批量處理）；(2) 無法利用 HTTP 緩存（POST 發送，且 Endpoint 只有一個）；(3) 權限控制較複雜。',
+        keywords: ['Schema', 'Query/Mutation', 'DataLoader', 'Overfetching'],
+      },
+      {
+        question: '解釋 Webhook 與 Long Polling 的差別？',
+        answer: 'Long Polling：Client 打請求給 Server，Server 等到有數據才回傳（或超時才回傳）。雖然比 Polling 好，但仍佔用 Connection。Webhook：反向 API，Server 有數據後打 Client 的 Callback URL。Server→Client 主動推送。適合第三方通知（如 GitHub, Stripe）。',
+        keywords: ['Real-time', 'Callback', 'Server-Push'],
+      },
     ],
   },
 
@@ -181,6 +236,16 @@ export const networking = {
         question: '為什麼 HTTPS 不能防止所有的中間人攻擊？',
         answer: '標準 HTTPS 依賴 CA（Certificate Authority）體系：瀏覽器信任的 CA 頒發的憑證都被認為有效。攻擊面：(1) CA 被入侵（DigiNotar 事件）——解決方案：CT Log（Certificate Transparency），所有頒發的憑證公開記錄，可被監控；(2) 社會工程學攻擊讓用戶安裝惡意根 CA——解決方案：憑證固定（Certificate Pinning），Client 內建了 Server 的 Public Key，拒絕其他憑證；(3) SSL Stripping——攻擊者讓 Client 使用 HTTP——解決方案：HSTS Preload，瀏覽器內建了強制 HTTPS 的域名列表；(4) 用戶忽略憑證錯誤警告。',
         keywords: ['CA', 'Certificate Transparency', 'HSTS', 'Certificate Pinning', 'mTLS'],
+      },
+      {
+        question: '解釋 CSRF 攻擊與 XSS 攻擊的差異與防範？',
+        answer: 'XSS（跨站腳本）：攻擊者在網頁注入 JS (如 `<script>alert(1)</script>`)。防護：輸入過濾、輸出轉義、CSP。CSRF（跨站請求偽造）：利用 Cookie 自動帶入的特性，誘導你在 A 站操作 B 站（如匯款）。防護：CSRF Token、SameSite=Strict/Lax。區別：XSS 盜取信息；CSRF 代替你發送請求。',
+        keywords: ['XSS', 'CSRF', 'CSP', 'SameSite'],
+      },
+      {
+        question: '什麼是 mTLS (Mutual TLS)？在使用場景？',
+        answer: '雙向 TLS，Client 也要提供憑證證明身份。主要用於：微服務內部通訊、Zero Trust 網絡、高安全性金融 API（如 Open Banking）。',
+        keywords: ['mTLS', 'Zero Trust', 'Certificates'],
       },
     ],
   },
@@ -212,6 +277,16 @@ export const networking = {
         question: '一致性雜湊解決了什麼問題？虛擬節點的作用是什麼？',
         answer: '傳統取模雜湊（`hash(key) % N`）的問題：節點增減時幾乎所有 key 都需要重新映射，引發大規模快取失效和資料遷移。一致性雜湊將節點和 key 都映射到同一個環形空間（0-2³²），key 順時針找到第一個節點。節點增減時只影響相鄰 key（約 1/N 的 key 需要遷移）。虛擬節點：每個物理節點映射為多個虛擬節點（通常 100-200 個），讓節點在環上均勻分布，避免真實節點分布不均導致某節點承擔過多負載（熱點問題）。應用：Redis Cluster（Hash Slot，16384 個虛擬槽）、Cassandra（Vnodes）、Nginx upstream consistent hashing。',
         keywords: ['Hash Ring', 'Virtual Node', 'Cache Invalidation', 'Data Migration', 'Hot Spot'],
+      },
+      {
+        question: '什麼是負載均衡的「四層」與「七層」？',
+        answer: '四層（L4）：基於 IP+Port 轉發（如 LVS）。不解析 HTTP 內容，快且適合高頻寬。七層（L7）：解析 HTTP 內容（如 Nginx）。可進行 URL 路由、Cookie 粘性、WAF 檢查。適合靈活業務逻辑。',
+        keywords: ['L4 LB', 'L7 LB', 'Proxy', 'Application Layer'],
+      },
+      {
+        question: '解釋「熔斷器」與「限流」的區別？',
+        answer: '限流（Rate Limiting）：保護自己，不被過多請求衝垮（Token Bucket/Leaky Bucket）。熔斷（Circuit Breaker）：保護下游，如果下游服務掛了，主動停掉呼叫，避免資源被耗盡。',
+        keywords: ['Resilience', 'Hystrix', 'Rate Limiting', 'Circuit Breaker'],
       },
     ],
   },
