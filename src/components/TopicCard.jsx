@@ -6,11 +6,12 @@ import './TopicCard.css'
 export default function TopicCard({ topic, categoryColor }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const accentColor = topic.color || categoryColor
 
   return (
     <button
       className="topic-card"
-      style={{ '--card-accent': categoryColor }}
+      style={{ '--card-accent': accentColor }}
       onClick={() => navigate(`/topic/${topic.id}`)}
       id={`topic-card-${topic.id}`}
     >

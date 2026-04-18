@@ -70,6 +70,7 @@ export default function TopicPage() {
   }
 
   const SimulatorComponent = simulatorModules[topicId]
+  const topicPath = `USER_ROOT / ${topic.categoryId.toUpperCase()} / ${topic.id.replace(/-/g, '_').toUpperCase()}`
 
   const tabs = [
     { id: 'concepts', label: t('tabs.concepts') },
@@ -80,7 +81,7 @@ export default function TopicPage() {
 
   return (
     <div className="topic-page">
-      <div className="topic-header" style={{ borderColor: topic.color }}>
+      <div className="topic-header" style={{ '--topic-accent': topic.color }} data-path={topicPath}>
         <span className="topic-category-badge" style={{ color: topic.color }}>
           {t(`categories.${topic.categoryId}`)}
         </span>
@@ -92,18 +93,20 @@ export default function TopicPage() {
         {activeTab => (
           <>
             {activeTab === 'concepts' && (
-              <div className="topic-section">
-                {content.concepts.map((c, i) => (
-                  <div key={i} className="concept-block card">
-                    <h3 className="concept-title" style={{ color: topic.color }}>{c.title}</h3>
-                    <FormattedContent text={c.text} />
-                  </div>
-                ))}
+              <div className="topic-section topic-section-grid">
+                <div className="topic-grid">
+                  {content.concepts.map((c, i) => (
+                    <div key={i} className="concept-block" style={{ '--block-accent': topic.color }}>
+                      <h3 className="concept-title">{c.title}</h3>
+                      <FormattedContent text={c.text} />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {activeTab === 'simulator' && SimulatorComponent && (
-              <div className="topic-section">
+              <div className="topic-section topic-section-simulator">
                 <Suspense fallback={<SimulatorFallback color={topic.color} />}>
                   <SimulatorComponent color={topic.color} />
                 </Suspense>
@@ -111,14 +114,16 @@ export default function TopicPage() {
             )}
 
             {activeTab === 'scenarios' && (
-              <div className="topic-section">
-                {content.scenarios.map((s, i) => (
-                  <div key={i} className={`scenario-block card scenario-${s.type}`}>
-                    <div className="scenario-type-tag">{s.type === 'practice' ? '🔧 實戰案例' : '📐 設計案例'}</div>
-                    <h3 className="scenario-title">{s.title}</h3>
-                    <FormattedContent text={s.text} />
-                  </div>
-                ))}
+              <div className="topic-section topic-section-grid">
+                <div className="topic-grid">
+                  {content.scenarios.map((s, i) => (
+                    <div key={i} className={`scenario-block scenario-${s.type}`} style={{ '--block-accent': topic.color }}>
+                      <div className="scenario-type-tag">{s.type === 'practice' ? 'SYSTEM_CASE / 實戰案例' : 'ARCH_CASE / 設計案例'}</div>
+                      <h3 className="scenario-title">{s.title}</h3>
+                      <FormattedContent text={s.text} />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

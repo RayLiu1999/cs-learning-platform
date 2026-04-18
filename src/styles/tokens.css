@@ -1,46 +1,45 @@
-/* 設計系統 Token — CS 學習平台專屬配色 */
+/* ═══════════════════════════════════════════════════════════════
+   CYBERPUNK DASHBOARD — Design Tokens
+   CS 核心知識學習平台 v2
+═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
 
 :root {
   /* ===== 字體 ===== */
-  --font-sans: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+  --font-ui:   'Orbitron', 'JetBrains Mono', sans-serif;
 
   /* ===== 字型大小 ===== */
-  --text-xs: 0.75rem;
-  --text-sm: 0.8125rem;
+  --text-xs:   0.75rem;
+  --text-sm:   0.85rem;
   --text-base: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
+  --text-md:   1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
 
   /* ===== 間距 ===== */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
   --space-10: 2.5rem;
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* ===== 圓角 ===== */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* ===== 圓角（硬朗幾何感，少用圓角）===== */
+  --radius-sm:   3px;
+  --radius-md:   4px;
+  --radius-lg:   6px;
+  --radius-xl:   8px;
   --radius-full: 9999px;
-
-  /* ===== 陰影 ===== */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
 
   /* ===== 動畫 ===== */
   --transition-fast: 150ms ease;
@@ -48,63 +47,93 @@
   --transition-slow: 400ms ease;
 
   /* ===== 佈局 ===== */
-  --sidebar-width: 260px;
-  --navbar-height: 56px;
-  --content-max-width: 900px;
+  --sidebar-width:    280px;
+  --navbar-height:    54px;
+  --content-max-width: 1480px;
 
-  /* ===== 主題色（4 個 CS 核心分類）===== */
-  --clr-os:          #e8915a;   /* 暖橘 — 作業系統與併發 */
-  --clr-networking:  #5a9ce8;   /* 天藍 — 電腦網路 */
-  --clr-database:    #7c5ae8;   /* 紫色 — 資料庫與儲存 */
-  --clr-algorithms:  #5ae8a0;   /* 翠綠 — 演算法與資料結構 */
+  /* ===== 4 大分類霓虹主色 ===== */
+  --clr-os:         #ff1f5a;  /* 熱酈谅紅 */
+  --clr-networking: #00bfff;  /* 電光天藍 */
+  --clr-database:   #bf00ff;  /* 純電齍紫 */
+  --clr-algorithms: #aaff00;  /* 酸樁茵綠 */
 }
 
-/* ===== 深色主題（預設）===== */
+/* ═══ 深色主題 (Cyberpunk — 預設) ═══ */
 [data-theme="dark"], :root {
-  --clr-bg-primary:   #0a0a0f;
-  --clr-bg-secondary: #12121a;
-  --clr-bg-tertiary:  #1a1a25;
-  --clr-bg-elevated:  #222230;
-  --clr-bg-hover:     #2a2a3a;
+  --clr-bg-primary:   #030305;
+  --clr-bg-secondary: #080a0f;
+  --clr-bg-tertiary:  #0d0f18;
+  --clr-bg-elevated:  #111420;
+  --clr-bg-hover:     #141828;
 
-  --clr-text-primary:   #f8fafc;
-  --clr-text-secondary: #cbd5e1;
-  --clr-text-muted:     #94a3b8;
+  --clr-text-primary:   #e8eaf6;
+  --clr-text-secondary: #cdd5e6;
+  --clr-text-muted:     #a8b4c8;
 
-  --clr-border:       rgba(255, 255, 255, 0.08);
-  --clr-border-hover: rgba(255, 255, 255, 0.15);
+  --clr-border:       rgba(0, 243, 255, 0.12);
+  --clr-border-hover: rgba(0, 243, 255, 0.35);
 
-  --clr-success: #4ade80;
-  --clr-warning: #fbbf24;
-  --clr-error:   #ef4444;
-  --clr-info:    #60a5fa;
+  /* 網格線 */
+  --grid-color: rgba(0, 243, 255, 0.03);
+
+  --clr-success: #39ff14;
+  --clr-warning: #ffcc00;
+  --clr-error:   #ff3131;
+  --clr-info:    #00f3ff;
+
+  /* 各分類 glow 陰影 */
+  --glow-os:         0 0 16px rgba(255, 31, 90, 0.45);
+  --glow-networking: 0 0 16px rgba(0, 191, 255, 0.45);
+  --glow-database:   0 0 16px rgba(191, 0, 255, 0.45);
+  --glow-algorithms: 0 0 16px rgba(170, 255, 0, 0.45);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.8);
 }
 
-/* ===== 亮色主題 ===== */
+/* ═══ 亮色主題 (Light Cyber — 高對比工業風) ═══ */
 [data-theme="light"] {
-  --clr-bg-primary:   #f8f8fc;
+  --clr-bg-primary:   #f0f2f5;
   --clr-bg-secondary: #ffffff;
-  --clr-bg-tertiary:  #f0f0f5;
+  --clr-bg-tertiary:  #e8ecf2;
   --clr-bg-elevated:  #ffffff;
-  --clr-bg-hover:     #e8e8f0;
+  --clr-bg-hover:     #dde3ec;
 
-  --clr-text-primary:   #1a1a2e;
-  --clr-text-secondary: #5c5a70;
-  --clr-text-muted:     #9c9ab0;
+  --clr-text-primary:   #0d1117;
+  --clr-text-secondary: #1e2d40;
+  --clr-text-muted:     #445566;
 
-  --clr-border:       rgba(0, 0, 0, 0.08);
-  --clr-border-hover: rgba(0, 0, 0, 0.15);
+  --clr-border:       rgba(0, 0, 0, 0.12);
+  --clr-border-hover: rgba(0, 0, 0, 0.28);
+
+  --grid-color: rgba(0, 0, 0, 0.03);
 
   --clr-success: #16a34a;
   --clr-warning: #d97706;
   --clr-error:   #dc2626;
-  --clr-info:    #2563eb;
+  --clr-info:    #0369a1;
+
+  --glow-os:         0 0 10px rgba(255, 31, 90, 0.2);
+  --glow-networking: 0 0 10px rgba(0, 191, 255, 0.2);
+  --glow-database:   0 0 10px rgba(191, 0, 255, 0.2);
+  --glow-algorithms: 0 0 10px rgba(170, 255, 0, 0.2);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-/* ===== 全域基底樣式 ===== */
+/* ═══ 全域基底樣式 ═══ */
 body {
   font-family: var(--font-sans);
   background: var(--clr-bg-primary);
   color: var(--clr-text-primary);
   transition: background var(--transition-base), color var(--transition-base);
+  /* 格線背景 */
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-attachment: fixed;
 }

@@ -1,17 +1,30 @@
-// 頂部導覽列元件
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { getTopicById } from '../data/topics'
 import './Navbar.css'
 
-export default function Navbar({ theme, onToggleTheme, onToggleSidebar }) {
+function formatPathSegment(value) {
+  return value.replace(/-/g, '_').toUpperCase()
+}
+
+export default function Navbar({ theme, onToggleTheme, onToggleSidebar, sidebarOpen }) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
+  const location = useLocation()
+
+  const topicId = location.pathname.startsWith('/topic/')
+    ? location.pathname.replace('/topic/', '')
+    : null
+  const topic = topicId ? getTopicById(topicId) : null
+
+  const navPath = topic
+    ? `USER_ROOT / ${formatPathSegment(topic.categoryId)} / ${formatPathSegment(topic.id)} / LIVE_VIEW`
+    : 'USER_ROOT / HOME / DASHBOARD'
 
   return (
-    <nav className="navbar" id="main-navbar">
+    <nav className={`navbar ${sidebarOpen ? '' : 'navbar-expanded'}`} id="main-navbar">
       <div className="navbar-left">
         <button
-          className="navbar-hamburger show-mobile-only"
+          className="navbar-hamburger"
           onClick={onToggleSidebar}
           aria-label="切換側邊欄"
           id="sidebar-toggle"
@@ -21,13 +34,14 @@ export default function Navbar({ theme, onToggleTheme, onToggleSidebar }) {
           </svg>
         </button>
 
-        <button className="navbar-brand" onClick={() => navigate('/')} id="nav-home">
-          <span className="navbar-logo">💻</span>
-          <span className="navbar-title">{t('app.logoTitle')}</span>
-        </button>
+        <div className="navbar-mobile-brand">{t('app.logoTitle')}</div>
+        <div className="navbar-path" title={navPath}>{navPath}</div>
       </div>
 
       <div className="navbar-right">
+        <div className="navbar-status">
+          {topic ? 'DEVICE_STATUS: ACTIVE' : 'DEVICE_STATUS: STABLE'}
+        </div>
         <button
           className="navbar-theme-toggle"
           onClick={onToggleTheme}

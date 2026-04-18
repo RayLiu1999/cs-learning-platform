@@ -1,12 +1,12 @@
 {
   "app": {
-    "logoTitle": "CS 核心知識",
+    "logoTitle": "CS_CORE.EXE",
     "lightMode": "切換亮色模式",
     "darkMode": "切換深色模式"
   },
   "home": {
-    "title": "CS 核心知識學習平台",
-    "subtitle": "深入理解作業系統、網路、資料庫與演算法，附互動式模擬器"
+    "title": "CS_CORE.EXE",
+    "subtitle": "深入解析作業系統、網路、資料庫與演算法，以互動模擬器掌握底層機制"
   },
   "categories": {
     "os": "作業系統 & 並發",

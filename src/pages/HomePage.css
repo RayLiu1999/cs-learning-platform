@@ -1,51 +1,137 @@
+/* ═══ Cyberpunk Home Page ═══ */
 .home-page {
-  padding: var(--space-6) var(--space-4);
-  max-width: 1200px;
+  width: min(100%, var(--content-max-width));
   margin: 0 auto;
+  padding: 0 0 var(--space-10);
 }
 
 .home-hero {
-  text-align: center;
-  padding: var(--space-8) 0 var(--space-6);
+  position: relative;
+  margin-bottom: var(--space-10);
+  padding: var(--space-10) var(--space-8);
+  background: linear-gradient(90deg, rgba(8, 10, 15, 0.96), rgba(8, 10, 15, 0.76) 52%, transparent 100%);
+  border-left: 5px solid var(--clr-info);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%);
+}
+
+[data-theme="light"] .home-hero {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.84) 52%, transparent 100%);
+}
+
+.home-kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--clr-info);
+  letter-spacing: 0.18em;
+  margin-bottom: var(--space-4);
+  opacity: 0.9;
 }
 
 .home-title {
-  font-size: var(--text-4xl);
+  font-family: var(--font-ui);
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
   font-weight: 700;
   color: var(--clr-text-primary);
   margin-bottom: var(--space-3);
-  line-height: 1.2;
+  line-height: 1.05;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 26px rgba(0, 243, 255, 0.28);
+}
+
+[data-theme="light"] .home-title {
+  text-shadow: none;
 }
 
 .home-subtitle {
-  font-size: var(--text-lg);
+  max-width: 72ch;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
   color: var(--clr-text-secondary);
-  max-width: 600px;
-  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.home-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.home-status-card {
+  min-height: 84px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--clr-border);
+  background: rgba(8, 10, 15, 0.55);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+[data-theme="light"] .home-status-card {
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.home-status-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--clr-text-secondary);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.home-status-value {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--clr-info);
+  letter-spacing: 0.12em;
 }
 
 .home-category {
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-10);
 }
 
 .home-category-title {
-  font-size: var(--text-2xl);
-  font-weight: 600;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
   margin-bottom: var(--space-4);
-  padding-bottom: var(--space-2);
-  border-bottom: 2px solid currentColor;
-  opacity: 0.9;
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid currentColor;
+  background: linear-gradient(90deg, color-mix(in srgb, currentColor 10%, transparent), transparent 85%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.home-category-title::before {
+  content: '▶';
+  font-size: 0.6em;
+  opacity: 0.72;
 }
 
 .home-topics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: var(--space-4);
 }
 
+@media (max-width: 768px) {
+  .home-hero {
+    padding: var(--space-8) var(--space-5);
+  }
+}
+
 @media (max-width: 600px) {
+  .home-page {
+    width: 100%;
+  }
+
   .home-title {
-    font-size: var(--text-2xl);
+    font-size: clamp(2rem, 12vw, 2.6rem);
   }
 
   .home-topics-grid {

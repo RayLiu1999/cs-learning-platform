@@ -1,21 +1,38 @@
 /* 佈局樣式 */
 .app-layout {
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .main-content {
   margin-top: var(--navbar-height);
   margin-left: var(--sidebar-width);
   min-height: calc(100vh - var(--navbar-height));
-  padding: var(--space-8) var(--space-6);
+  height: calc(100vh - var(--navbar-height));
+  overflow-y: auto;
+  padding: var(--space-8);
   transition: margin-left var(--transition-base);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 243, 255, 0.18) transparent;
+}
+
+.main-content.main-content-expanded {
+  margin-left: 0;
 }
 
 @media (max-width: 768px) {
+  .app-layout {
+    min-height: 100dvh;
+    height: auto;
+  }
+
   .main-content {
     margin-left: 0;
-    padding: var(--space-5) var(--space-4);
+    min-height: calc(100dvh - var(--navbar-height));
+    height: auto;
+    padding: var(--space-5) var(--space-4) var(--space-8);
   }
 }
