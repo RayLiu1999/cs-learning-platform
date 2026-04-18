@@ -1,0 +1,150 @@
+{
+  "app": {
+    "logoTitle": "CS 核心知識",
+    "lightMode": "切換亮色模式",
+    "darkMode": "切換深色模式"
+  },
+  "home": {
+    "title": "CS 核心知識學習平台",
+    "subtitle": "深入理解作業系統、網路、資料庫與演算法，附互動式模擬器"
+  },
+  "categories": {
+    "os": "作業系統 & 並發",
+    "networking": "計算機網路",
+    "database": "資料庫原理",
+    "algorithms": "演算法 & 資料結構"
+  },
+  "tabs": {
+    "concepts": "核心概念",
+    "simulator": "互動模擬",
+    "scenarios": "應用場景",
+    "interview": "面試問答"
+  },
+  "nav": {
+    "home": "首頁",
+    "toggleTheme": "切換主題"
+  },
+  "topics": {
+    "process-thread": {
+      "title": "Process & Thread",
+      "subtitle": "行程、執行緒與 Fiber 的本質差異，Context Switch 開銷分析"
+    },
+    "memory-management": {
+      "title": "記憶體管理 & GC",
+      "subtitle": "虛擬記憶體、分頁機制、JVM GC 演算法與 OOM 排查"
+    },
+    "io-models": {
+      "title": "I/O 模型",
+      "subtitle": "BIO/NIO/epoll/io_uring 五種 I/O 模型全解析"
+    },
+    "concurrency-models": {
+      "title": "並發程式設計模型",
+      "subtitle": "Goroutine GMP 模型、Event Loop、Reactive Programming"
+    },
+    "locks-sync": {
+      "title": "鎖與同步原語",
+      "subtitle": "死鎖四個必要條件、CAS、樂觀鎖 vs 悲觀鎖"
+    },
+    "cpu-scheduling": {
+      "title": "CPU 排程",
+      "subtitle": "CFS、Round Robin、Priority 排程與 Linux 排程類別"
+    },
+    "osi-model": {
+      "title": "OSI 七層模型",
+      "subtitle": "從實體層到應用層，每層協定與對應裝置全解析"
+    },
+    "tcp-deep-dive": {
+      "title": "TCP 深度剖析",
+      "subtitle": "三次握手、四次揮手、流量控制、擁塞控制 BBR"
+    },
+    "http-evolution": {
+      "title": "HTTP 協定演進",
+      "subtitle": "HTTP/1.1 → 2 → 3，TLS 1.3，快取機制深度解析"
+    },
+    "dns-cdn": {
+      "title": "DNS & CDN",
+      "subtitle": "遞迴查詢全流程、CDN 邊緣快取、GeoDNS 負載均衡"
+    },
+    "api-protocols": {
+      "title": "API 協定設計",
+      "subtitle": "REST vs gRPC vs GraphQL，WebSocket，BFF 模式"
+    },
+    "network-security": {
+      "title": "網路安全",
+      "subtitle": "TLS 1.3 握手、DDoS 防護、MITM、Zero Trust 架構"
+    },
+    "load-balancing-net": {
+      "title": "負載均衡",
+      "subtitle": "L4 vs L7 LB、一致性雜湊、熔斷器、多區域 Active-Active"
+    },
+    "storage-engines": {
+      "title": "儲存引擎",
+      "subtitle": "B+ Tree vs LSM Tree，InnoDB Buffer Pool，RocksDB"
+    },
+    "indexing": {
+      "title": "索引原理",
+      "subtitle": "聚簇索引、覆蓋索引、聯合索引最左前綴、索引失效原因"
+    },
+    "transactions-mvcc": {
+      "title": "事務 & MVCC",
+      "subtitle": "ACID 實現代價、InnoDB MVCC 版本鏈、四種隔離級別"
+    },
+    "distributed-db": {
+      "title": "分散式資料庫",
+      "subtitle": "CAP / PACELC、Raft 共識演算法、NewSQL TiDB 架構"
+    },
+    "db-scaling": {
+      "title": "資料庫擴展",
+      "subtitle": "讀寫分離、分片策略、連接池調優，電商訂單分庫分表"
+    },
+    "nosql-spectrum": {
+      "title": "NoSQL 全景",
+      "subtitle": "KV / Document / Wide-Column / Graph，Redis 底層資料結構"
+    },
+    "query-optimization": {
+      "title": "查詢最佳化",
+      "subtitle": "CBO 最佳化器、JOIN 演算法、N+1 問題、EXPLAIN 分析"
+    },
+    "sorting-searching": {
+      "title": "排序 & 搜尋",
+      "subtitle": "Quick Sort / Merge Sort / Timsort，二分查找邊界與應用"
+    },
+    "hash-tables": {
+      "title": "雜湊表",
+      "subtitle": "鏈結法 vs 開放定址、一致性雜湊、HashMap 防 DoS 攻擊"
+    },
+    "trees-graphs": {
+      "title": "樹 & 圖演算法",
+      "subtitle": "BFS/DFS、最短路徑、拓撲排序，微服務依賴圖應用"
+    },
+    "advanced-ds": {
+      "title": "進階資料結構",
+      "subtitle": "Bloom Filter、Skip List、Trie，分散式系統的工程應用"
+    },
+    "distributed-algo": {
+      "title": "分散式演算法",
+      "subtitle": "一致性雜湊、Jump Consistent Hash、Gossip 協定"
+    },
+    "rate-limiting-algo": {
+      "title": "限流演算法",
+      "subtitle": "令牌桶、漏桶、滑動視窗，Redis 分散式限流實現"
+    },
+    "big-data-algo": {
+      "title": "大資料演算法",
+      "subtitle": "Top-K Min Heap、HyperLogLog 基數估算、MapReduce 排序"
+    },
+    "string-algo": {
+      "title": "字串演算法",
+      "subtitle": "KMP、Trie 路由匹配、Aho-Corasick 敏感詞過濾"
+    }
+  },
+  "simulator": {
+    "start": "開始模擬",
+    "reset": "重置",
+    "step": "單步執行",
+    "speed": "速度",
+    "running": "運行中",
+    "paused": "已暫停",
+    "finished": "已完成"
+  }
+}

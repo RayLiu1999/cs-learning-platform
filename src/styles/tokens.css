@@ -1,0 +1,110 @@
+/* 設計系統 Token — CS 學習平台專屬配色 */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ===== 字體 ===== */
+  --font-sans: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+
+  /* ===== 字型大小 ===== */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  /* ===== 間距 ===== */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ===== 圓角 ===== */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ===== 陰影 ===== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  /* ===== 動畫 ===== */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* ===== 佈局 ===== */
+  --sidebar-width: 260px;
+  --navbar-height: 56px;
+  --content-max-width: 900px;
+
+  /* ===== 主題色（4 個 CS 核心分類）===== */
+  --clr-os:          #e8915a;   /* 暖橘 — 作業系統與併發 */
+  --clr-networking:  #5a9ce8;   /* 天藍 — 電腦網路 */
+  --clr-database:    #7c5ae8;   /* 紫色 — 資料庫與儲存 */
+  --clr-algorithms:  #5ae8a0;   /* 翠綠 — 演算法與資料結構 */
+}
+
+/* ===== 深色主題（預設）===== */
+[data-theme="dark"], :root {
+  --clr-bg-primary:   #0a0a0f;
+  --clr-bg-secondary: #12121a;
+  --clr-bg-tertiary:  #1a1a25;
+  --clr-bg-elevated:  #222230;
+  --clr-bg-hover:     #2a2a3a;
+
+  --clr-text-primary:   #f8fafc;
+  --clr-text-secondary: #cbd5e1;
+  --clr-text-muted:     #94a3b8;
+
+  --clr-border:       rgba(255, 255, 255, 0.08);
+  --clr-border-hover: rgba(255, 255, 255, 0.15);
+
+  --clr-success: #4ade80;
+  --clr-warning: #fbbf24;
+  --clr-error:   #ef4444;
+  --clr-info:    #60a5fa;
+}
+
+/* ===== 亮色主題 ===== */
+[data-theme="light"] {
+  --clr-bg-primary:   #f8f8fc;
+  --clr-bg-secondary: #ffffff;
+  --clr-bg-tertiary:  #f0f0f5;
+  --clr-bg-elevated:  #ffffff;
+  --clr-bg-hover:     #e8e8f0;
+
+  --clr-text-primary:   #1a1a2e;
+  --clr-text-secondary: #5c5a70;
+  --clr-text-muted:     #9c9ab0;
+
+  --clr-border:       rgba(0, 0, 0, 0.08);
+  --clr-border-hover: rgba(0, 0, 0, 0.15);
+
+  --clr-success: #16a34a;
+  --clr-warning: #d97706;
+  --clr-error:   #dc2626;
+  --clr-info:    #2563eb;
+}
+
+/* ===== 全域基底樣式 ===== */
+body {
+  font-family: var(--font-sans);
+  background: var(--clr-bg-primary);
+  color: var(--clr-text-primary);
+  transition: background var(--transition-base), color var(--transition-base);
+}

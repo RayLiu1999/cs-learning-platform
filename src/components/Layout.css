@@ -1,0 +1,21 @@
+/* 佈局樣式 */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  margin-top: var(--navbar-height);
+  margin-left: var(--sidebar-width);
+  min-height: calc(100vh - var(--navbar-height));
+  padding: var(--space-8) var(--space-6);
+  transition: margin-left var(--transition-base);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: var(--space-5) var(--space-4);
+  }
+}

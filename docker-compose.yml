@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  cs-learning-platform:
+    build: .
+    container_name: cs-learning-platform
+    ports:
+      - "${HOST_IP:-127.0.0.1}:${PORT:-8005}:80"
+    restart: unless-stopped
